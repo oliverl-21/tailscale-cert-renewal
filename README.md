@@ -1,2 +1,2 @@
 # tailscale-cert-renewal
-scritp for Tailscale Cert renewal
+script for Tailscale Cert renewal
