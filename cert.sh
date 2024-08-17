@@ -23,6 +23,11 @@ while [[ $# -gt 0 ]]; do
         DEBUG="YES"
         shift # past argument
         ;;
+    -p|--pem)
+        PEM="$2"
+        shift
+        shift
+        ;;
     -*|--*)
         echo "Unknown option $1"
         exit 1
@@ -46,13 +51,19 @@ else
     echo "Tailscale or jq not found or not in path";
     exit 1
 fi
-
+if [ -z "$CERTFILE" ]; then
+        CERTFILE="${CERTCN}.crt"
+fi
+if [ -z "$KEYFILE" ]; then
+        KEYFILE="${CERTCN}.key"
+fi
 if [[ $DEBUG ]];
 then
 echo "Certfile  = ${CERTFILE}"
 echo "KEYFILE   = ${KEYFILE}"
 echo "LIFETIME  = ${LIFETIME}"
 echo "LIFELEFT  = ${LIFELEFT}"
+echo "PEM       = ${PEM}"
 fi
 # script
 if openssl x509 -in "${CERTFILE}" -checkend ${LIFELEFT} &>/dev/null;
@@ -63,4 +74,8 @@ then
 else
     echo "Renewing Cert for ${CERTCN}";
     tailscale cert --cert-file "${CERTFILE}" --key-file "${KEYFILE}" ${CERTCN}
+fi
+if [ -n "$PEM" ]; then
+        echo "Combine ${CERTFILE} and ${KEYFILE} into ${PEM}"
+        cat ${CERTFILE} ${KEYFILE} >> ${PEM}
 fi
